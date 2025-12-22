@@ -105,16 +105,16 @@ int main(void)
 
     /* Make the window's context current */
     glfwMakeContextCurrent(window);//将刚创建的窗口的 OpenGL 上下文设置为 “当前上下文”。
-
+    glfwSwapInterval(2);
 
     glewInit();
 
-    // 数据：位置(2) + 颜色(3)
+    // 数据：位置
     float vertices[] = {
-        -0.5f, -0.5f,  1.0f, 0.0f, 0.0f, 
-         0.5f, -0.5f,  1.0f, 0.0f, 0.0f, 
-         0.5f,  0.5f,  1.0f, 0.0f, 0.0f, 
-        -0.5f,  0.5f,  1.0f, 0.0f, 0.0f
+        -0.5f, -0.5f,
+         0.5f, -0.5f,
+         0.5f,  0.5f,
+        -0.5f,  0.5f
     };
 
     unsigned int indices[] = {
@@ -124,18 +124,18 @@ int main(void)
     unsigned int buffer;
     glGenBuffers(1, &buffer);//创建顶点缓冲区
     glBindBuffer(GL_ARRAY_BUFFER, buffer);//绑定缓冲区，操作都在这上面进行
-    glBufferData(GL_ARRAY_BUFFER, 5 * 4 * sizeof(float), vertices, GL_STATIC_DRAW);//加入数据（顶点信息）
+    glBufferData(GL_ARRAY_BUFFER, 2 * 4 * sizeof(float), vertices, GL_STATIC_DRAW);//加入数据（顶点信息）
 
     glEnableVertexAttribArray(0);// 一定要启用，否则黑屏
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), 0);//告知opengl数据的内存布局,即告诉gpu如何理解数据
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);//告知opengl数据的内存布局,即告诉gpu如何理解数据
 
     unsigned int ibo;
     glGenBuffers(1, &ibo);//创建索引缓冲区
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);//绑定缓冲区
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indices, GL_STATIC_DRAW);
 
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float),(const void*)(2*sizeof(float)));
+    //glEnableVertexAttribArray(1);
+    //glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float),(const void*)(2*sizeof(float)));
 
     ShaderProgramSource source = ParseShader("res/shaders/Basic.shader");
     //std::cout << "Vertex" << std::endl;  //测试
@@ -145,12 +145,26 @@ int main(void)
     unsigned int shader = CreateShader(source.VertexSource, source.FragmentSource);
     glUseProgram(shader);
 
+    int location = glGetUniformLocation(shader, "u_color");
+    _ASSERT(location != -1);
+    glUniform4f(location, 0.2f, 0.3f, 0.8f, 1.0f);
+    float r = 0.0f;
+    float increment = 0.05f;
+
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
         /* Render here */
-        glClear(GL_COLOR_BUFFER_BIT);//清除颜色
+        glClear(GL_COLOR_BUFFER_BIT);//清除颜色 
 
+        glUniform4f(location, r , 0.3f, 0.8f, 1.0f);
+        if (r > 1.0f) {
+            increment = -0.05f;
+        }
+        else if(r < 0.0f){
+            increment = 0.05f;
+        }
+        r += increment;
         GlClearError();
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT,nullptr);//绘制正方形，6代表索引的数量，不是顶点的数量
         GlCheckError();
