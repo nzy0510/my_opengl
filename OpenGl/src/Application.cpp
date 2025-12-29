@@ -121,6 +121,11 @@ int main(void)
         0,1,2,
         2,3,0
     };
+
+    unsigned int vao;//创建顶点数组，记录状态
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
     unsigned int buffer;
     glGenBuffers(1, &buffer);//创建顶点缓冲区
     glBindBuffer(GL_ARRAY_BUFFER, buffer);//绑定缓冲区，操作都在这上面进行
@@ -131,8 +136,11 @@ int main(void)
 
     unsigned int ibo;
     glGenBuffers(1, &ibo);//创建索引缓冲区
+    glBindVertexArray(vao);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);//绑定缓冲区
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indices, GL_STATIC_DRAW);
+
+    glBindVertexArray(0);//先解绑
 
     //glEnableVertexAttribArray(1);
     //glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float),(const void*)(2*sizeof(float)));
@@ -143,7 +151,7 @@ int main(void)
     //std::cout <<"Fragement" << std::endl;
     //std::cout << source.FragmentSource << std::endl;
     unsigned int shader = CreateShader(source.VertexSource, source.FragmentSource);
-    glUseProgram(shader);
+    glUseProgram(0);
 
     int location = glGetUniformLocation(shader, "u_color");
     _ASSERT(location != -1);
@@ -156,6 +164,8 @@ int main(void)
     {
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);//清除颜色 
+        glUseProgram(shader);
+        glBindVertexArray(vao);//启用vao
 
         glUniform4f(location, r , 0.3f, 0.8f, 1.0f);
         if (r > 1.0f) {
@@ -165,10 +175,8 @@ int main(void)
             increment = 0.05f;
         }
         r += increment;
-        GlClearError();
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT,nullptr);//绘制正方形，6代表索引的数量，不是顶点的数量
-        GlCheckError();
 
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT,nullptr);//绘制正方形，6代表索引的数量，不是顶点的数量
         /* Swap front and back buffers */
         glfwSwapBuffers(window);//交换前缓冲区和后缓冲区的内容：将后台渲染好的完整画面 “一次性” 显示到屏幕上，避免了渲染过程中（画面不完整时）的闪烁问题。
 
