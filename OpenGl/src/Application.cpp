@@ -10,6 +10,8 @@
 #include"Renderer.h"
 #include"VertexBuffer.h"
 #include"IndexBuffer.h"
+
+#include"VertexArray.h"
 // CPU 端：创建窗口，定义数据数组。
 // 传输：把数据塞给 GPU(VBO)。
 // 设置：告诉 GPU 怎么读这些数据(VertexAttribPointer)。
@@ -119,19 +121,18 @@ int main(void)
             2,3,0
         };
 
-        unsigned int vao;//创建顶点数组，记录状态
-        GlCall(glGenVertexArrays(1, &vao));
-        GlCall(glBindVertexArray(vao));
 
+        VertexArray va;
         VertexBuffer vb(vertices, 4 * 2 * sizeof(float));//创建顶点缓冲区对象，并传入数据
 
-        GlCall(glEnableVertexAttribArray(0));// 一定要启用，否则黑屏//在顶点数组中处理
-        GlCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0));//告知opengl数据的内存布局,即告诉gpu如何理解数据
+        VertexBufferLayout layout;
+		layout.Push<float>(2);//位置属性
+		va.AddBuffer(vb,layout);
+
+        //GlCall(glEnableVertexAttribArray(0));// 一定要启用，否则黑屏//在顶点数组中处理
+        //GlCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0));//告知opengl数据的内存布局,即告诉gpu如何理解数据
 
         IndexBuffer ib(indices, 6);//创建索引缓冲区对象，并传入数据
-
-        //glEnableVertexAttribArray(1);
-        //glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float),(const void*)(2*sizeof(float)));
 
         ShaderProgramSource source = ParseShader("res/shaders/Basic.shader");
         unsigned int shader = CreateShader(source.VertexSource, source.FragmentSource);
@@ -149,7 +150,7 @@ int main(void)
             GlCall(glClear(GL_COLOR_BUFFER_BIT));//清除颜色 
 
             GlCall(glUseProgram(shader));
-            GlCall(glBindVertexArray(vao));//启用vao
+            va.Bind();
 
             GlCall(glUniform4f(location, r, 0.3f, 0.8f, 1.0f));
             ib.Bind();

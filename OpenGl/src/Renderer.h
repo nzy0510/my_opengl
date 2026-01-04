@@ -8,4 +8,8 @@ const char* GlErrorToString(GLenum error);
 bool GlLogCall(const char* functionCall, const char* file, int line);
 
 // Wrapper macro: usage GlCall(glSomeFunction(...));
-#define GlCall(x) (GlClearError(), (x), GlLogCall(#x, __FILE__, __LINE__))
+#ifdef _DEBUG
+    #define GlCall(x) (GlClearError(), (x), GlLogCall(#x, __FILE__, __LINE__))
+#else
+    #define GlCall(x) (x)
+#endif
