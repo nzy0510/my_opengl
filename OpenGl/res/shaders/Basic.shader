@@ -12,10 +12,9 @@ void main()
 #shader fragment
 #version 330 core
 layout(location=0) out vec4 color;
- // in vec3 vColor;
- uniform vec4 u_color;//每次绘制的,和属性的根本区别
+uniform vec4 u_color;//每次绘制的,和属性的根本区别
 
- void main()
- {
-    color=u_color;
- };
+void main()
+{
+    color = u_color;
+};
