@@ -14,7 +14,7 @@ Shader::Shader(const std::string& filepath)
 
 Shader::~Shader()
 {
-	GlCall(glDeleteProgram(m_RendererID));
+	GLCall(glDeleteProgram(m_RendererID));
 }
 
 
@@ -39,7 +39,10 @@ ShaderProgramSource Shader::ParseShader(const std::string& filepath) {
             }
         }
         else {
-            ss[int(type)] << line << '\n';
+            // 只在type为VERTEX或FRAGMENT时写入，避免无效索引
+            if (type == ShaderType::VERTEX || type == ShaderType::FRAGEMENT) {
+                ss[static_cast<int>(type)] << line << '\n';
+            }
         }
     }
     return { ss[0].str(),ss[1].str() };//将缓冲区内容转化为std::string
@@ -86,17 +89,17 @@ unsigned int Shader::CreateShader(const std::string& vertexshader, const std::st
 
 void Shader::Bind() const
 {
-	GlCall(glUseProgram(m_RendererID));
+	GLCall(glUseProgram(m_RendererID));
 }
 
 void Shader::Unbind() const
 {
-	GlCall(glUseProgram(0));
+	GLCall(glUseProgram(0));
 }
 
 void Shader::SetUniform4f(const std::string& name, float v0, float v1, float v2, float v3)
 {
-	GlCall(glUniform4f(GetUniformLocation(name), v0, v1, v2, v3));
+	GLCall(glUniform4f(GetUniformLocation(name), v0, v1, v2, v3));
 }
 
 int Shader::GetUniformLocation(const std::string& name)

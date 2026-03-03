@@ -13,6 +13,7 @@
 
 #include"VertexArray.h"
 #include"Shader.h"
+#include"VertexBufferLayout.h"
 // CPU 端：创建窗口，定义数据数组。
 // 传输：把数据塞给 GPU(VBO)。
 // 设置：告诉 GPU 怎么读这些数据(VertexAttribPointer)。
@@ -69,10 +70,12 @@ int main(void)
 		shader.Bind();
 		shader.SetUniform4f("u_color", 0.2f, 0.3f, 0.8f, 1.0f); 
 
-		va.Unbind();
-		shader.Unbind();
-		vb.Unbind();
-		ib.Unbind();
+		//va.Unbind();
+		//shader.Unbind();
+		//vb.Unbind();
+		//ib.Unbind();
+
+		Renderer renderer;
 
         float r = 0.0f;
         float increment = 0.05f;
@@ -80,14 +83,13 @@ int main(void)
         /* Loop until the user closes the window */
         while (!glfwWindowShouldClose(window))
         {
-            /* Render here */
-            GlCall(glClear(GL_COLOR_BUFFER_BIT));//清除颜色 
+			renderer.Clear();//调用渲染器的 Clear 方法，清空颜色缓冲区
 
 			shader.Bind();
-            shader.SetUniform4f("u_color", r, 0.3f, 0.8f, 1.0f);
+            shader.SetUniform4f("u_color", r, 0.3f, 0.8f, 1.0f);//仍存在可优化处
 
-            va.Bind();
-            ib.Bind();
+			renderer.Draw(va, ib, shader);//调用渲染器的 Draw 方法，传入顶点数组对象、索引缓冲区对象和着色器对象，进行绘制
+
             if (r > 1.0f) {
                 increment = -0.05f;
             }
@@ -96,12 +98,11 @@ int main(void)
             }
             r += increment;
 
-            GlCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));//绘制正方形，6代表索引的数量，不是顶点的数量
             /* Swap front and back buffers */
-            GlCall(glfwSwapBuffers(window));//交换前缓冲区和后缓冲区的内容：将后台渲染好的完整画面 “一次性” 显示到屏幕上，避免了渲染过程中（画面不完整时）的闪烁问题。
+            GLCall(glfwSwapBuffers(window));//交换前缓冲区和后缓冲区的内容：将后台渲染好的完整画面 “一次性” 显示到屏幕上，避免了渲染过程中（画面不完整时）的闪烁问题。
 
             /* Poll for and process events */
-            GlCall(glfwPollEvents());//检查并处理所有待处理的事件
+            GLCall(glfwPollEvents());//检查并处理所有待处理的事件
         }
     }
     glfwTerminate();//释放资源
